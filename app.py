@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Setting up the page configuration with title and icon
-st.set_page_config(page_title="LangChain: Chat with SQL DB", page_icon="❄")
+st.set_page_config(page_title="LangChain: Chat with SQL DB", page_icon="🐝")
 
 st.markdown(
     """
@@ -58,7 +58,47 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
+st.markdown(
+    """
+    <style>
+    /* Page title styling */
+    .page-title {
+        font-size: 2.5em;
+        text-align: center;
+        color: #333;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    /* Button styling */
+    .stButton>button {
+        background-color: #FFBD2E;
+        color: black;
+        border: none;
+        padding: 10px 24px;
+        text-align: center;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    
+    .stButton>button:hover {
+        background-color: white;
+        color: black;
+        border: 2px solid blue;
+    }
+    
+    /* Dataframe styling */
+    .stDataFrame {
+        background-color: black;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # Setting up the title of the app
 st.markdown(
     """
