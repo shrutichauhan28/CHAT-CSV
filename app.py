@@ -60,7 +60,30 @@ st.markdown(
 )
 
 # Setting up the title of the app
-st.markdown('<div class="page-title">LangChain: Chat with SQL DB</div>', unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    .title-box {
+        background-color: #333;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        border: 3px solid #FFD300; /* Bumblebee yellow border */
+    }
+    .title-text {
+        font-size: 2.5em;
+        color: white;
+    }
+    </style>
+    <div class="title-box">
+        <div class="title-text">Welcome to TalkCSV</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # Database connection options
 radio_opt = ["Use SQLite 3 Database - analytics_db"]
