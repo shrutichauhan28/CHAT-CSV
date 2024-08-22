@@ -325,7 +325,8 @@ if st.sidebar.button("New Chat"):
 # Button to clear the current chat
 if st.sidebar.button("Clear Chat"):
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
-    st.experimental_rerun()
+    st.stop() 
+   
 
 # Display chat history messages
 for msg in st.session_state.messages:
