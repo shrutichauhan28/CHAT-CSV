@@ -1,6 +1,10 @@
 [theme]
-primaryColor = 'black'
+primaryColor = "#FFBD2E"      # Bumblebee yellow
+backgroundColor = "#20232A"   # Dark background for contrast
+secondaryBackgroundColor = "#282C34"  # Slightly lighter background for widgets
+textColor = "#FFFFFF"         # White text color for readability
+font = "sans serif"           # Font style for a clean look
 
-secondaryBackgroundColor = '#ADD8E6'
-textColor = 'black'
-font = "sans serif"
+[header]
+fontSize = 22
+
