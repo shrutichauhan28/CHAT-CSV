@@ -15,49 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Setting up the page configuration with title and icon
-st.set_page_config(page_title="LangChain: Chat with SQL DB", page_icon="🐝")
+st.set_page_config(page_title="ChatCSV", page_icon="🐝")
 
-st.markdown(
-    """
-    <style>
-    /* Page title styling */
-    .page-title {
-        font-size: 2.5em;
-        text-align: center;
-        color: #333;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    
-    /* Button styling */
-    .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        text-align: center;
-        font-size: 16px;
-        margin: 4px 2px;
-        transition-duration: 0.4s;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-    
-    .stButton>button:hover {
-        background-color: white;
-        color: black;
-        border: 2px solid blue;
-    }
-    
-    /* Dataframe styling */
-    .stDataFrame {
-        background-color: black;
-        color: white;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 st.markdown(
     """
     <style>
@@ -99,6 +58,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # Setting up the title of the app
 st.markdown(
     """
@@ -123,7 +83,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 
 # Database connection options
 radio_opt = ["Use SQLite 3 Database - analytics_db"]
@@ -159,7 +118,9 @@ agent = create_sql_agent(
     llm=llm,
     toolkit=toolkit,
     verbose=True,
-    agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+    agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    # max_iterations=10,
+    # timeout=120 
 )
 
 # Session state for messages and chat histories
@@ -188,7 +149,6 @@ if st.sidebar.button("New Chat"):
 if st.sidebar.button("Clear Chat"):
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
     st.stop() 
-   
 
 # Display chat history messages
 for msg in st.session_state.messages:
@@ -202,21 +162,24 @@ if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
     st.chat_message("user").write(user_query)
 
-    # Generate response from agent
-    with st.chat_message("assistant"):
-        streamlit_callback = StreamlitCallbackHandler(st.container())
-        try:
-            # Run the query through the agent and get the response
-            response = agent.run(user_query)
-            
-            # Add the response to the chat history
-            st.session_state.messages.append({"role": "assistant", "content": response})
+    # Display spinner while generating response
+    with st.spinner("Processing your query..."):
+        # Generate response from agent
+        with st.chat_message("assistant"):
+            streamlit_callback = StreamlitCallbackHandler(st.container())
+            try:
+                # Run the query through the agent and get the response
+                response = agent.run(user_query)
 
-            # Display the response directly
-            st.write(response)
-            
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
+                # Add the response to the chat history
+                st.session_state.messages.append({"role": "assistant", "content": response})
+
+                # Display the response directly
+                st.write(response)
+
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
+
 
 # Save chat history when "Share Chat" is clicked
 def save_chat_history():
