@@ -85,7 +85,7 @@ st.markdown(
 )
 
 # Database connection options
-radio_opt = ["Use SQLite 3 Database - analytics_db"]
+radio_opt = ["Use SQLite 3 Database - analytics_db", "Upload a CSV File"]
 
 # Sidebar options for database selection
 selected_opt = st.sidebar.radio(label="Choose the DB you want to chat with", options=radio_opt)
@@ -100,6 +100,10 @@ if not api_key:
 # Initialize the Groq LLM
 llm = ChatGroq(groq_api_key=api_key, model_name="gemma2-9b-it", streaming=True)
 
+# Session state for uploaded CSV
+if "csv_data" not in st.session_state:
+    st.session_state["csv_data"] = None
+
 # Function to configure SQLite database
 @st.cache_resource(ttl="2h")
 def configure_db():
@@ -107,21 +111,49 @@ def configure_db():
     creator = lambda: sqlite3.connect(f"file:{dbfilepath}?mode=ro", uri=True)
     return SQLDatabase(create_engine("sqlite:///", creator=creator))
 
-# Configure DB
-db = configure_db()
+# Configure DB if SQLite is selected
+if selected_opt == "Use SQLite 3 Database - analytics_db":
+    db = configure_db()
+    # SQL toolkit
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+    # Creating an agent with SQL DB and Groq LLM
+    agent = create_sql_agent(
+        llm=llm,
+        toolkit=toolkit,
+        verbose=True,
+        agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    )
 
-# SQL toolkit
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+# CSV Upload and processing if CSV option is selected
+elif selected_opt == "Upload a CSV File":
+    uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"])
 
-# Creating an agent with SQL DB and Groq LLM
-agent = create_sql_agent(
-    llm=llm,
-    toolkit=toolkit,
-    verbose=True,
-    agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    # max_iterations=10,
-    # timeout=120 
-)
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        st.session_state["csv_data"] = df  # Store the CSV data in session state
+        st.write("Here is your uploaded data:")
+        st.dataframe(df)
+
+        # Create an in-memory SQLite database from the CSV file
+        @st.cache_resource(ttl="2h")
+        def create_db_from_csv(csv_df):
+            conn = sqlite3.connect(":memory:")
+            csv_df.to_sql("csv_table", conn, index=False, if_exists="replace")
+            return SQLDatabase(create_engine("sqlite://", creator=lambda: conn))
+
+        # Configure the database from the uploaded CSV
+        db = create_db_from_csv(df)
+
+        # SQL toolkit
+        toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+
+        # Creating an agent with SQL DB and Groq LLM
+        agent = create_sql_agent(
+            llm=llm,
+            toolkit=toolkit,
+            verbose=True,
+            agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        )
 
 # Session state for messages and chat histories
 if "messages" not in st.session_state:
@@ -201,3 +233,4 @@ if st.sidebar.button("Share Chat"):
         file_name=chat_file,
         mime="text/plain"
     )
+
